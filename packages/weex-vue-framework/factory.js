@@ -5849,6 +5849,7 @@ var hooks = ['create', 'activate', 'update', 'remove', 'destroy'];
 
 function sameVnode (a, b) {
   return (
+    // 注意：组件上是否设置key会影响这里，v-for上如果没有设置key，会导致a.key和b.key均为undefined，a.key一直等于b.key，就无法实现组件的复用
     a.key === b.key && (
       (
         a.tag === b.tag &&
@@ -6255,6 +6256,11 @@ function createPatchFunction (backend) {
         oldEndVnode = oldCh[--oldEndIdx];
         newStartVnode = newCh[++newStartIdx];
       } else {
+        /**
+         * createKeyToOldIdx
+         * 获取index和key的map
+         *
+         */
         if (isUndef(oldKeyToIdx)) { oldKeyToIdx = createKeyToOldIdx(oldCh, oldStartIdx, oldEndIdx); }
         idxInOld = isDef(newStartVnode.key)
           ? oldKeyToIdx[newStartVnode.key]
@@ -6283,6 +6289,12 @@ function createPatchFunction (backend) {
     }
   }
 
+  /**
+   *
+   * @param {*} children
+   * 校验key是否重复
+   * 学习这种查重方法，与自己写在星海bp中查重方法比较，的确比自己写的好，效果更高
+   */
   function checkDuplicateKeys (children) {
     var seenKeys = {};
     for (var i = 0; i < children.length; i++) {
@@ -6316,6 +6328,7 @@ function createPatchFunction (backend) {
     index,
     removeOnly
   ) {
+    // 如果两个节点相同，直接返回，组件上是否有key会影响这里
     if (oldVnode === vnode) {
       return
     }
@@ -6325,6 +6338,7 @@ function createPatchFunction (backend) {
       vnode = ownerArray[index] = cloneVNode(vnode);
     }
 
+    // vnode.elm 虚拟节点对应的真实节点
     var elm = vnode.elm = oldVnode.elm;
 
     if (isTrue(oldVnode.isAsyncPlaceholder)) {
@@ -6340,6 +6354,11 @@ function createPatchFunction (backend) {
     // note we only do this if the vnode is cloned -
     // if the new node is not cloned it means the render functions have been
     // reset by the hot-reload-api and we need to do a proper re-render.
+
+    /**
+     * 如果节点均是静态节点 && key值相同,
+     *
+     */
     if (isTrue(vnode.isStatic) &&
       isTrue(oldVnode.isStatic) &&
       vnode.key === oldVnode.key &&
@@ -6361,21 +6380,34 @@ function createPatchFunction (backend) {
       for (i = 0; i < cbs.update.length; ++i) { cbs.update[i](oldVnode, vnode); }
       if (isDef(i = data.hook) && isDef(i = i.update)) { i(oldVnode, vnode); }
     }
+    /**
+     * 注意：当一个虚拟节点有text属性时，表示是文本节点；否则为元素节点。元素节点的text为空，tag不为空；文本节点text不为空，tag为空
+     */
     if (isUndef(vnode.text)) {
       if (isDef(oldCh) && isDef(ch)) {
+        // 如果新节点和旧节点的children都存在
+        // 如果旧节点和新节点不相同，进行节点的更新
         if (oldCh !== ch) { updateChildren(elm, oldCh, ch, insertedVnodeQueue, removeOnly); }
       } else if (isDef(ch)) {
+        // 如果旧节点没有子节点，新节点有子节点
         if (process.env.NODE_ENV !== 'production') {
+          // 检查key是否重复
           checkDuplicateKeys(ch);
         }
+        // 如果旧节点是文本节点，将旧节点的text清空
         if (isDef(oldVnode.text)) { nodeOps.setTextContent(elm, ''); }
+        // 直接将新节点的children赋给旧节点
         addVnodes(elm, null, ch, 0, ch.length - 1, insertedVnodeQueue);
       } else if (isDef(oldCh)) {
+        // 如果旧节点有children，新节点没有children
+        // 直接将旧节点的children清空
         removeVnodes(oldCh, 0, oldCh.length - 1);
       } else if (isDef(oldVnode.text)) {
+        // 如果新节点和旧节点均没有children，但是旧节点是文本节点，直接将真实节点的text清空，这是因为此时新节点的text为undefined，这是在isUndefined(vnode.text)判断中
         nodeOps.setTextContent(elm, '');
       }
     } else if (oldVnode.text !== vnode.text) {
+      // 新节点有text且新节点和旧节点的text不同，直接将新节点的text赋值给真实节点
       nodeOps.setTextContent(elm, vnode.text);
     }
     if (isDef(data)) {
