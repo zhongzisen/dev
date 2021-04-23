@@ -5679,6 +5679,7 @@ function insertBefore (
   target,
   before
 ) {
+  // nodeType为3，表示为文本节点
   if (target.nodeType === 3) {
     if (node.type === 'text') {
       node.setAttr('value', target.text);
@@ -5690,6 +5691,7 @@ function insertBefore (
     }
     return
   }
+  // insertBefore：在您指定的已有子节点before之前插入新的子节点target
   node.insertBefore(target, before);
 }
 
@@ -5721,6 +5723,7 @@ function parentNode (node) {
   return node.parentNode
 }
 
+// MDN：Node.nextSibling是一个只读属性，返回其父节点的childNodes列表中紧跟在其后面的节点，如果指定的节点为而最后一个节点，则返回null
 function nextSibling (node) {
   return node.nextSibling
 }
@@ -6212,6 +6215,15 @@ function createPatchFunction (backend) {
     }
   }
 
+
+  /**
+   *
+   * @param {*} parentElm 旧虚拟节点对应的真实节点
+   * @param {*} oldCh 旧的虚拟节点的子节点数组
+   * @param {*} newCh 新的虚拟节点的子节点数组
+   * @param {*} insertedVnodeQueue
+   * @param {*} removeOnly 只有<transition-group>用到了这个属性
+   */
   function updateChildren (parentElm, oldCh, newCh, insertedVnodeQueue, removeOnly) {
     var oldStartIdx = 0;
     var newStartIdx = 0;
