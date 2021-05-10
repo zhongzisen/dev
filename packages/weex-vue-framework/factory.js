@@ -4023,7 +4023,7 @@ function eventsMixin (Vue) {
 
   Vue.prototype.$off = function (event, fn) {
     var vm = this;
-    // all
+    // 删除all
     if (!arguments.length) {
       vm._events = Object.create(null);
       return vm

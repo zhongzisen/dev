@@ -52,6 +52,13 @@ export function initGlobalAPI (Vue: GlobalAPI) {
   }
 
   Vue.options = Object.create(null)
+
+  {/* export const ASSET_TYPES = [
+    'component',
+    'directive',
+    'filter'
+  ] */}
+
   ASSET_TYPES.forEach(type => {
     Vue.options[type + 's'] = Object.create(null)
   })
@@ -59,6 +66,18 @@ export function initGlobalAPI (Vue: GlobalAPI) {
   // this is used to identify the "base" constructor to extend all plain-object
   // components with in Weex's multi-instance scenarios.
   Vue.options._base = Vue
+
+  {/* builtInComponents
+    export default {
+      KeepAlive
+    } */}
+
+    {/* export function extend (to: Object, _from: ?Object): Object {
+      for (const key in _from) {
+        to[key] = _from[key]
+      }
+      return to
+    } */}
 
   extend(Vue.options.components, builtInComponents)
 

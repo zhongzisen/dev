@@ -45,11 +45,12 @@ if (process.env.NODE_ENV !== 'production') {
 
 /**
  * Helper that recursively merges two data objects together.
+ * 递归得将两个数据对象合并在一起
  */
 function mergeData (to: Object, from: ?Object): Object {
   if (!from) return to
   let key, toVal, fromVal
-
+  // 得到from对象所有的key
   const keys = hasSymbol
     ? Reflect.ownKeys(from)
     : Object.keys(from)
@@ -67,6 +68,7 @@ function mergeData (to: Object, from: ?Object): Object {
       isPlainObject(toVal) &&
       isPlainObject(fromVal)
     ) {
+      // toVal和fromVal不同且均是对象
       mergeData(toVal, fromVal)
     }
   }
@@ -390,6 +392,7 @@ export function mergeOptions (
   child: Object,
   vm?: Component
 ): Object {
+  // 如果是生产环境
   if (process.env.NODE_ENV !== 'production') {
     checkComponents(child)
   }
@@ -428,6 +431,7 @@ export function mergeOptions (
     }
   }
   function mergeField (key) {
+    // defaultStrat：return childVal === undefined ? parentVal : childVal
     const strat = strats[key] || defaultStrat
     options[key] = strat(parent[key], child[key], vm, key)
   }
